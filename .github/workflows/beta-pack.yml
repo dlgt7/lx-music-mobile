@@ -17,12 +17,64 @@ jobs:
       - name: Build Packages
         env:
           DISABLE_SVG: 1
+          KEYSTORE_STORE_FILE: ${{ secrets.KEYSTORE_STORE_FILE }}
+          KEYSTORE_STORE_FILE_BASE64: ${{ secrets.KEYSTORE_STORE_FILE_BASE64 }}
+          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
         shell: bash
         run: |
           cd android
-          echo ${{ secrets.KEYSTORE_STORE_FILE_BASE64 }} | base64 --decode > app/${{ secrets.KEYSTORE_STORE_FILE }}
-          ./gradlew assembleRelease -PMYAPP_UPLOAD_STORE_FILE='${{ secrets.KEYSTORE_STORE_FILE }}' -PMYAPP_UPLOAD_KEY_ALIAS='${{ secrets.KEYSTORE_KEY_ALIAS }}' -PMYAPP_UPLOAD_STORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}' -PMYAPP_UPLOAD_KEY_PASSWORD='${{ secrets.KEYSTORE_KEY_PASSWORD }}'
-          rm -f app/${{ secrets.KEYSTORE_STORE_FILE }}
+
+          GRADLE_ARGS=(assembleRelease)
+
+          if [ -n "${KEYSTORE_STORE_FILE:-}" ]; then
+            missing=()
+            for name in KEYSTORE_KEY_ALIAS KEYSTORE_PASSWORD KEYSTORE_KEY_PASSWORD; do
+              [ -n "${!name:-}" ] || missing+=("$name")
+            done
+            if [ ${#missing[@]} -gt 0 ]; then
+              echo "::error::缺少签名用的 Secrets: ${missing[*]}，请在仓库 Settings -> Secrets and variables -> Actions 中配置"
+              exit 1
+            fi
+
+            # 两种来源二选一：base64 secret 解码，或直接使用仓库里已提交的 keystore
+            if [ -n "${KEYSTORE_STORE_FILE_BASE64:-}" ]; then
+              echo "$KEYSTORE_STORE_FILE_BASE64" | base64 --decode > "app/$KEYSTORE_STORE_FILE"
+            elif [ ! -f "app/$KEYSTORE_STORE_FILE" ]; then
+              echo "::error::android/app/$KEYSTORE_STORE_FILE 不存在，且未配置 KEYSTORE_STORE_FILE_BASE64。请把 keystore 提交到 android/app/ 或配置 base64 secret"
+              exit 1
+            fi
+
+            # 提前校验 keystore，避免等到 packageRelease 才发现签名文件无效
+            echo "keystore size: $(wc -c < "app/$KEYSTORE_STORE_FILE") bytes"
+            echo "keystore type: $(file -b "app/$KEYSTORE_STORE_FILE")"
+            echo "keystore head: $(od -An -tx1 -N 8 "app/$KEYSTORE_STORE_FILE" | tr -s ' ')"
+            echo "（JKS 开头应为 fe ed fe ed，PKCS12 应为 30 82）"
+
+            if ! keytool -list -v -keystore "app/$KEYSTORE_STORE_FILE" \
+                -storepass "$KEYSTORE_PASSWORD" -alias "$KEYSTORE_KEY_ALIAS"; then
+              echo "::error::keystore 解码后不是有效的密钥库（或密码/别名不匹配）。请用 base64 -w 0 重新生成 KEYSTORE_STORE_FILE_BASE64，确保其内容为单行、无引号、无多余字符"
+              rm -f "app/$KEYSTORE_STORE_FILE"
+              exit 1
+            fi
+
+            GRADLE_ARGS+=(
+              "-PMYAPP_UPLOAD_STORE_FILE=$KEYSTORE_STORE_FILE"
+              "-PMYAPP_UPLOAD_KEY_ALIAS=$KEYSTORE_KEY_ALIAS"
+              "-PMYAPP_UPLOAD_STORE_PASSWORD=$KEYSTORE_PASSWORD"
+              "-PMYAPP_UPLOAD_KEY_PASSWORD=$KEYSTORE_KEY_PASSWORD"
+            )
+          else
+            echo "::warning::未配置 KEYSTORE_STORE_FILE，本次将使用 debug 签名打 release 包，仅可用于自测，请勿发布"
+          fi
+
+          ./gradlew "${GRADLE_ARGS[@]}"
+
+          # 只有从 base64 解码出来的临时文件才删除，仓库里提交的 keystore 不动
+          if [ -n "${KEYSTORE_STORE_FILE_BASE64:-}" ] && [ -n "${KEYSTORE_STORE_FILE:-}" ]; then
+            rm -f "app/$KEYSTORE_STORE_FILE"
+          fi
 
       # Push tag to GitHub if package.json version's tag is not tagged
       - name: Get package version
