@@ -21,6 +21,7 @@ export interface ListMenuProps {
   onAdd: (selectInfo: SelectInfo) => void
   onCopyName: (selectInfo: SelectInfo) => void
   onMusicSourceDetail: (selectInfo: SelectInfo) => void
+  onDownload: (selectInfo: SelectInfo) => void
   onRemoveCache: (selectInfo: SelectInfo) => void
   onDislikeMusic: (selectInfo: SelectInfo) => void
 }
@@ -58,7 +59,7 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
     const menu = [
       { action: 'play', label: t('play') },
       { action: 'playLater', label: t('play_later') },
-      // { action: 'download', label: '下载' },
+      { action: 'download', label: '下载' },
       { action: 'add', label: t('add_to') },
       { action: 'copyName', label: t('copy_name') },
       { action: 'musicSourceDetail', label: t('music_source_detail') },
@@ -96,6 +97,9 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
       case 'musicSourceDetail':
         props.onMusicSourceDetail(selectInfo)
         // setVIsibleMusicPosition(true)
+        break
+      case 'download':
+        props.onDownload(selectInfo)
         break
       case 'removeCache':
         props.onRemoveCache(selectInfo)
