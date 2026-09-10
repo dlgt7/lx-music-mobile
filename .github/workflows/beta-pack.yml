@@ -69,7 +69,8 @@ jobs:
             echo "::warning::未配置 KEYSTORE_STORE_FILE，本次将使用 debug 签名打 release 包，仅可用于自测，请勿发布"
           fi
 
-          ./gradlew "${GRADLE_ARGS[@]}"
+          # 限制并发 worker 数量，降低峰值内存，避免 Gradle daemon 被 OOM 杀掉
+          ./gradlew --max-workers=2 "${GRADLE_ARGS[@]}"
 
           # 只有从 base64 解码出来的临时文件才删除，仓库里提交的 keystore 不动
           if [ -n "${KEYSTORE_STORE_FILE_BASE64:-}" ] && [ -n "${KEYSTORE_STORE_FILE:-}" ]; then
