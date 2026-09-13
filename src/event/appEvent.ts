@@ -3,6 +3,7 @@ import Event from './Event'
 import commonState from '@/store/common/state'
 import { type Source as SonglistSource } from '@/store/songlist/state'
 import { type SearchType } from '@/store/search/state'
+import DownloadTask = LX.Download.DownloadTask
 
 
 // {
@@ -200,6 +201,22 @@ export class AppEvent extends Event {
 
   selectSyncMode(mode: LX.Sync.ModeType) {
     this.emit('selectSyncMode', mode)
+  }
+
+  download_list_changed() {
+    this.emit('download_list_changed')
+  }
+  download_task_add(task: DownloadTask) {
+    this.emit('download_task_add', task)
+  }
+  download_progress_update(payload: { id: string, progress: DownloadTask['progress'] }) {
+    this.emit('download_progress_update', payload)
+  }
+  download_status_update(payload: { id: string, status: DownloadTask['status'], errorMsg?: string }) {
+    this.emit('download_status_update', payload)
+  }
+  download_metadata_update(payload: { id: string, metadataStatus: DownloadTask['metadataStatus'] }) {
+    this.emit('download_metadata_update', payload)
   }
 }
 
