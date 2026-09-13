@@ -52,6 +52,11 @@ export const fetchAndApplyDetailedQuality = async(musicInfo, retryNum = 0) => {
       newTypes.push({ type: 'atmos', size })
       new_Types.atmos = { size }
     }
+    if (data.db && data.db.size && !new_Types.atmos_plus) {
+      const size = sizeFormate(data.db.size)
+      newTypes.push({ type: 'atmos_plus', size })
+      new_Types.atmos_plus = { size }
+    }
 
     const updatedMusicInfo = {
       ...musicInfo,

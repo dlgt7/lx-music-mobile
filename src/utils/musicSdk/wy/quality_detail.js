@@ -57,6 +57,18 @@ export const getMusicQualityInfo = (id) => {
       _types.atmos = { size }
     }
 
+    if (data.db != null && data.db.size != null) {
+      let size = sizeFormate(data.db.size)
+      if (!types.some(t => t.type === 'atmos')) {
+        types.push({ type: 'atmos', size })
+        _types.atmos = { size }
+      }
+      if (!types.some(t => t.type === 'atmos_plus')) {
+        types.push({ type: 'atmos_plus', size })
+        _types.atmos_plus = { size }
+      }
+    }
+
     return { types: [...types], _types: { ..._types } }
   })
 

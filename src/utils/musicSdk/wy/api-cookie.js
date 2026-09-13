@@ -53,6 +53,14 @@ export const getMusicUrl = (songInfo, type, retryNum = 0, noCopyrightFallbackUse
       targetPrefer.level = 'jymaster'
       targetPrefer.encodeType = 'flac'
       break
+    case 'atmos':
+      targetPrefer.level = 'jymaster'
+      targetPrefer.encodeType = 'flac'
+      break
+    case 'atmos_plus':
+      targetPrefer.level = 'jymaster'
+      targetPrefer.encodeType = 'flac'
+      break
     default:
       targetPrefer.level = 'exhigh'
       break
