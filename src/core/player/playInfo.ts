@@ -138,5 +138,5 @@ export const setPlayMusicInfo = (listId: string | null, musicInfo: LX.Download.L
 }
 
 export const getList = (listId: string | null): LX.Music.MusicInfo[] | LX.Download.ListItem[] => {
-  return listId == LIST_IDS.DOWNLOAD ? getDownloadList() : getListMusicSync(listId)
+  return listId == LIST_IDS.DOWNLOAD ? getDownloadList().filter((t: any) => t.status === 'completed' && t.musicInfo).map((t: any) => t.musicInfo) : getListMusicSync(listId)
 }
