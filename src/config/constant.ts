@@ -25,6 +25,7 @@ export enum COMPONENT_IDS {
   playDetail = 'playDetail',
   songlistDetail = 'songlistDetail',
   comment = 'comment',
+  DOWNLOAD_MANAGER = 'DOWNLOAD_MANAGER',
 }
 
 export enum NAV_SHEAR_NATIVE_IDS {

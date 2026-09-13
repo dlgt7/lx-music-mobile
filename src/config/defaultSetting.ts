@@ -14,6 +14,7 @@ const defaultSetting: LX.AppSetting = {
   'common.showExitBtn': true,
   'common.useSystemFileSelector': true,
   'common.alwaysKeepStatusbarHeight': false,
+  'common.wy_cookie': '',
 
   'player.startupAutoPlay': false,
   'player.startupPushPlayDetailScreen': false,
@@ -71,6 +72,14 @@ const defaultSetting: LX.AppSetting = {
   'download.fileName': '歌名 - 歌手',
   'download.quality': 'flac24bit',
   'download.path': '',
+  'download.writeLyric': false,
+  'download.writeRomaLyric': false,
+  'download.writeEmbedLyric': true,
+  'download.writeMetadata': true,
+  'download.writePicture': true,
+  'download.writeAlias': false,
+
+  'menu.downloadOneDrive': true,
 
   'sync.enable': false,
 
