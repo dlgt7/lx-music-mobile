@@ -77,6 +77,11 @@ declare global {
       'common.alwaysKeepStatusbarHeight': boolean
 
       /**
+       * 网易云Cookie
+       */
+      'common.wy_cookie': string
+
+      /**
        * 主题id
        */
       'theme.id': string
@@ -360,6 +365,41 @@ declare global {
        * 下载目录，为空时使用默认公共音乐目录
        */
       'download.path': string
+
+      /**
+       * 是否写入歌词文件
+       */
+      'download.writeLyric': boolean
+
+      /**
+       * 是否写入罗马音歌词
+       */
+      'download.writeRomaLyric': boolean
+
+      /**
+       * 是否写入内嵌歌词
+       */
+      'download.writeEmbedLyric': boolean
+
+      /**
+       * 是否写入元数据标签
+       */
+      'download.writeMetadata': boolean
+
+      /**
+       * 是否写入封面
+       */
+      'download.writePicture': boolean
+
+      /**
+       * 是否写入别名
+       */
+      'download.writeAlias': boolean
+
+      /**
+       * 是否显示OneDrive下载选项
+       */
+      'menu.downloadOneDrive': boolean
 
       /**
        * 是否启用同步

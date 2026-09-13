@@ -29,6 +29,7 @@ declare namespace LX {
       qualitys: MusicQualityType[]
       _qualitys: _MusicQualityType
       albumId?: string | number // 歌曲专辑ID
+      _full?: boolean // 是否已获取完整音质信息
     }
 
     interface MusicInfoMeta_local extends MusicInfoMetaBase {
@@ -40,9 +41,12 @@ declare namespace LX {
     interface MusicInfoBase<S = LX.Source> {
       id: string
       name: string // 歌曲名
+      alias?: string
       singer: string // 艺术家名
+      artists?: Array<{ id: string | number; name: string }>
       source: S // 源
       interval: string | null // 格式化后的歌曲时长，例：03:55
+      releaseDate?: string | null
       meta: MusicInfoMetaBase
     }
 
