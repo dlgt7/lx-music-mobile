@@ -4,6 +4,7 @@ import ConfirmAlert, { type ConfirmAlertType } from '@/components/common/Confirm
 import Text from '@/components/common/Text'
 import CheckBox from '@/components/common/CheckBox'
 import { useSettingValue } from '@/store/setting/hook'
+import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
 import { batchDownload } from '@/core/download'
 
@@ -11,14 +12,8 @@ export interface BatchDownloadModalType {
   show: (list: LX.Music.MusicInfo[]) => void
 }
 
-const qualityList: Array<{ id: LX.Quality; name: string }> = [
-  { id: '128k', name: '128k' },
-  { id: '320k', name: '320k' },
-  { id: 'flac', name: 'FLAC' },
-  { id: 'hires', name: 'Hi-Res' },
-  { id: 'atmos', name: 'Atmos' },
-  { id: 'atmos_plus', name: 'Atmos Plus' },
-  { id: 'master', name: 'Master' },
+const qualityIds: LX.Quality[] = [
+  '128k', '320k', 'flac', 'flac24bit', 'hires', 'atmos', 'atmos_plus', 'master',
 ]
 
 export default forwardRef<BatchDownloadModalType, { onConfirm?: () => void }>(
@@ -26,6 +21,7 @@ export default forwardRef<BatchDownloadModalType, { onConfirm?: () => void }>(
     const alertRef = useRef<ConfirmAlertType>(null)
     const selectedListRef = useRef<LX.Music.MusicInfo[]>([])
     const showOneDriveDownload = useSettingValue('menu.downloadOneDrive')
+    const t = useI18n()
     const [visible, setVisible] = useState(false)
     const [selectedQuality, setSelectedQuality] = useState<LX.Quality>('128k')
     const [selectedTarget, setSelectedTarget] = useState<'local' | 'onedrive'>('local')
@@ -85,13 +81,13 @@ export default forwardRef<BatchDownloadModalType, { onConfirm?: () => void }>(
             </View>
           ) : null}
           <View style={styles.group}>
-            {qualityList.map(item => (
+            {qualityIds.map(id => (
               <CheckBox
-                key={item.id}
+                key={id}
                 marginRight={8}
-                check={selectedQuality === item.id}
-                label={item.name}
-                onChange={() => setSelectedQuality(item.id)}
+                check={selectedQuality === id}
+                label={t(id)}
+                onChange={() => setSelectedQuality(id)}
                 need
               />
             ))}
