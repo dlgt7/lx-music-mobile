@@ -1,5 +1,6 @@
 import { stringMd5 } from 'react-native-quick-md5'
 import { decodeName } from '../index'
+import settingState from '@/store/setting/state'
 
 /**
  * 获取音乐音质
@@ -7,7 +8,7 @@ import { decodeName } from '../index'
  * @param {*} type
  */
 
-export const QUALITYS = ['flac24bit', 'flac', 'wav', 'ape', '320k', '192k', '128k']
+export const QUALITYS = ['master', 'atmos_plus', 'atmos', 'hires', 'flac24bit', 'flac', 'wav', 'ape', '320k', '192k', '128k']
 export const getMusicType = (info, type) => {
   const list = global.lx.qualityList[info.source]
   if (!list) return '128k'
@@ -40,3 +41,29 @@ export const formatSingerName = (singers, nameKey = 'name', join = '、') => {
   }
   return decodeName(String(singers ?? ''))
 }
+
+/**
+ * 根据当前激活的自定义API配置，解析音质的别名。
+ * 例如，如果应用请求 'hires'，但API配置只支持 'flac24bit'，则将其映射回去。
+ * @param {LX.OnlineSource} source 音乐源ID, e.g., 'kw', 'wy'
+ * @param {LX.Quality} type 应用请求的音质类型
+ * @returns {LX.Quality} 应该传递给API的实际音质类型
+ */
+export const resolveQualityAlias = (source, type) => {
+  const activeApiId = settingState.setting['common.apiSource'];
+  if (!/^user_api/.test(activeApiId)) {
+    return type;
+  }
+  const supportedQualities = global.lx.qualityList[source];
+  if (!supportedQualities) {
+    return type;
+  }
+  if (
+    type === 'hires' &&
+    !supportedQualities.includes('hires')
+  ) {
+    return 'flac24bit';
+  }
+
+  return type;
+};
