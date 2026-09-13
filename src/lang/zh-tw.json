@@ -518,5 +518,13 @@
   "version_title_latest": "🎉 目前版本已是最新 🎊",
   "version_title_new": "🌟 發現新版本 🌟",
   "version_title_unknown": "❓ 獲取最新版本資訊失敗 ❓",
-  "version_title_update": "🚀 軟體更新 🚀"
+  "version_title_update": "🚀 軟體更新 🚀",
+  "download_music_title": "下載 {name} - {artist}",
+  "128k": "128K",
+  "320k": "320K",
+  "flac": "FLAC",
+  "hires": "Hires 無損24-Bit",
+  "atmos": "臻品音質",
+  "atmos_plus": "臻品音質 2.0",
+  "master": "臻品母帶"
 }
