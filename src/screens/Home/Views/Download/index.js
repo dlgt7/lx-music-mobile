@@ -6,6 +6,7 @@ import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
 import Menu from '@/components/common/Menu'
 import { useTheme } from '@/store/theme/hook'
+import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
 import { sizeFormate } from '@/utils/common'
 
@@ -54,6 +55,7 @@ export default () => {
   const tasks = useDownloadTasks()
   const [sort, setSort] = useState('default')
   const theme = useTheme()
+  const t = useI18n()
   const menuRef = useRef(null)
   const sortMenuRef = useRef(null)
   const selectedItemRef = useRef(null)
@@ -88,7 +90,7 @@ export default () => {
         <Text style={styles.sn} size={13} color={theme['c-300']}>{index + 1}</Text>
         <TouchableOpacity style={styles.info}>
           <Text size={15} numberOfLines={1}>{item.musicInfo.name} - {item.musicInfo.singer}</Text>
-          <Text style={styles.status} size={11} color={item.status == 'error' ? theme['c-primary-font'] : theme['c-font-label']} numberOfLines={1}>{getStatusText(item)}{item.progress.total ? (item.status === 'downloading' ? ` ${sizeFormate(item.progress.downloaded)}/${sizeFormate(item.progress.total)}` : '') : ''} · {item.quality.toUpperCase()}</Text>
+          <Text style={styles.status} size={11} color={item.status == 'error' ? theme['c-primary-font'] : theme['c-font-label']} numberOfLines={1}>{getStatusText(item)}{item.progress.total ? (item.status === 'downloading' ? ` ${sizeFormate(item.progress.downloaded)}/${sizeFormate(item.progress.total)}` : '') : ''} · {t(item.quality)}</Text>
         </TouchableOpacity>
         <View style={styles.actions}>
           {item.status == 'paused' && <TouchableOpacity style={styles.action} accessibilityLabel="继续下载" onPress={() => { resumeTask(item.id) }}>
