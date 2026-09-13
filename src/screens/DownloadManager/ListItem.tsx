@@ -5,12 +5,14 @@ import Image from '@/components/common/Image';
 import { Icon } from '@/components/common/Icon';
 
 import { useTheme } from '@/store/theme/hook';
+import { useI18n } from '@/lang';
 import { createStyle } from '@/utils/tools';
 import {dateFormat, sizeFormate} from '@/utils/common';
 import { resumeTask, retryTask } from '@/core/download';
 
 export default memo(({ task: initialTask, onRemove }: { task: LX.Download.DownloadTask, onRemove: (id: string) => void }) => {
   const theme = useTheme();
+  const t = useI18n();
   const [task, setTask] = useState(initialTask);
   const errorColor = theme['c-600'];
 
@@ -128,7 +130,7 @@ export default memo(({ task: initialTask, onRemove }: { task: LX.Download.Downlo
           <Text size={12} color={theme['c-font-label']}>  {task.musicInfo.singer}</Text>
         </Text>
         <View style={styles.detailsRow}>
-          <Text size={11} color={theme['c-font-label']}>{task.quality.toUpperCase()}</Text>
+          <Text size={11} color={theme['c-font-label']}>{t(task.quality)}</Text>
           {task.target === 'onedrive' &&
             <Text size={11} color={theme['c-font-label']}> • OneDrive</Text>
           }
