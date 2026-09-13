@@ -2,7 +2,12 @@ export function getFileExtension(quality: LX.Quality) {
   switch (quality) {
     case '128k':
     case '320k':
+    case '192k':
       return 'mp3'
+    case 'ape':
+      return 'ape'
+    case 'wav':
+      return 'wav'
     default:
       return 'flac'
   }
