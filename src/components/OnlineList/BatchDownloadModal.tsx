@@ -13,7 +13,7 @@ export interface BatchDownloadModalType {
 }
 
 const qualityIds: LX.Quality[] = [
-  '128k', '320k', 'flac', 'flac24bit', 'hires', 'atmos', 'atmos_plus', 'master',
+  '128k', '320k', 'flac', 'flac24bit',
 ]
 
 export default forwardRef<BatchDownloadModalType, { onConfirm?: () => void }>(

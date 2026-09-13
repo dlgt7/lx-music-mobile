@@ -10,6 +10,7 @@ import { clearMusicUrl, handleDislikeMusic, handlePlay, handlePlayLater, handleS
 import { addTask as addDownloadTask } from '@/core/download'
 import settingState from '@/store/setting/state'
 import BatchDownloadModal, { type BatchDownloadModalType } from './BatchDownloadModal'
+import MusicDownloadModal, { type MusicDownloadModalType } from '@/screens/Home/Views/Mylist/MusicList/MusicDownloadModal'
 import { createStyle } from '@/utils/tools'
 
 export interface OnlineListProps {
@@ -41,6 +42,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
   const listMusicMultiAddRef = useRef<ListAddMultiType>(null)
   const listMenuRef = useRef<ListMenuType>(null)
   const batchDownloadModalRef = useRef<BatchDownloadModalType>(null)
+  const musicDownloadModalRef = useRef<MusicDownloadModalType>(null)
   // const loadingMaskRef = useRef<LoadingMaskType>(null)
 
   useImperativeHandle(ref, () => ({
@@ -114,6 +116,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
       <ListMusicAdd ref={listMusicAddRef} onAdded={() => { hancelExitSelect() }} />
       <ListMusicMultiAdd ref={listMusicMultiAddRef} onAdded={() => { hancelExitSelect() }} />
       <BatchDownloadModal ref={batchDownloadModalRef} onConfirm={() => { hancelExitSelect() }} />
+      <MusicDownloadModal ref={musicDownloadModalRef} />
       <ListMenu
         ref={listMenuRef}
         onPlay={info => { handlePlay(info.musicInfo) }}
@@ -122,9 +125,10 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
         onAdd={handleAddMusic}
         onMusicSourceDetail={info => { void handleShowMusicSourceDetail(info.musicInfo) }}
         onDownload={info => {
-          const quality = settingState.setting['download.quality'] ?? settingState.setting['player.playQuality']
-          if (info.selectedList.length) info.selectedList.forEach(m => addDownloadTask(m, quality))
-          else addDownloadTask(info.musicInfo, quality)
+          if (info.selectedList.length) {
+            const quality = settingState.setting['download.quality'] ?? settingState.setting['player.playQuality']
+            info.selectedList.forEach(m => addDownloadTask(m, quality))
+          } else musicDownloadModalRef.current?.show(info.musicInfo)
         }}
         onRemoveCache={info => { void clearMusicUrl(info.musicInfo) }}
         onDislikeMusic={info => { void handleDislikeMusic(info.musicInfo) }}
