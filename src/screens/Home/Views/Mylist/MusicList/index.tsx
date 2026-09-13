@@ -3,7 +3,8 @@ import { useCallback, useRef } from 'react'
 import listState from '@/store/list/state'
 import ListMenu, { type ListMenuType, type Position, type SelectInfo } from './ListMenu'
 import { clearMusicUrl, handleDislikeMusic, handlePlay, handlePlayLater, handleRemove, handleShare, handleShowMusicSourceDetail, handleUpdateMusicInfo, handleUpdateMusicPosition } from './listAction'
-import { downloadMusic, downloadMusicList } from '@/core/download'
+import { addTask as addDownloadTask } from '@/core/download'
+import settingState from '@/store/setting/state'
 import List, { type ListType } from './List'
 import ListMusicAdd, { type MusicAddModalType as ListMusicAddType } from '@/components/MusicAddModal'
 import ListMusicMultiAdd, { type MusicMultiAddModalType as ListAddMultiType } from '@/components/MusicMultiAddModal'
@@ -165,7 +166,11 @@ export default () => {
         onEditMetadata={handleEditMetadata}
         onChangePosition={info => musicPositionModalRef.current?.show(info)}
         onToggleSource={info => musicToggleModalRef.current?.show(info)}
-        onDownload={info => { void (info.selectedList.length ? downloadMusicList(info.selectedList as LX.Music.MusicInfoOnline[]) : downloadMusic(info.musicInfo as LX.Music.MusicInfoOnline)) }}
+        onDownload={info => {
+          const quality = settingState.setting['download.quality'] ?? settingState.setting['player.playQuality']
+          if (info.selectedList.length) info.selectedList.forEach(m => addDownloadTask(m, quality))
+          else addDownloadTask(info.musicInfo, quality)
+        }}
         onRemoveCache={info => { void clearMusicUrl(info.musicInfo) }}
       />
       <MetadataEditModal
