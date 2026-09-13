@@ -17,6 +17,7 @@ import ListMusicSearch, { type ListMusicSearchType } from './ListMusicSearch'
 import MusicPositionModal, { type MusicPositionModalType } from './MusicPositionModal'
 import MetadataEditModal, { type MetadataEditType, type MetadataEditProps } from '@/components/MetadataEditModal'
 import MusicToggleModal, { type MusicToggleModalType } from './MusicToggleModal'
+import MusicDownloadModal, { type MusicDownloadModalType } from './MusicDownloadModal'
 
 
 export default () => {
@@ -32,6 +33,7 @@ export default () => {
   const metadataEditTypeRef = useRef<MetadataEditType>(null)
   const listMenuRef = useRef<ListMenuType>(null)
   const musicToggleModalRef = useRef<MusicToggleModalType>(null)
+  const musicDownloadModalRef = useRef<MusicDownloadModalType>(null)
   const layoutHeightRef = useRef<number>(0)
   const isShowMultipleModeBar = useRef(false)
   const isShowSearchBarModeBar = useRef(false)
@@ -167,9 +169,10 @@ export default () => {
         onChangePosition={info => musicPositionModalRef.current?.show(info)}
         onToggleSource={info => musicToggleModalRef.current?.show(info)}
         onDownload={info => {
-          const quality = settingState.setting['download.quality'] ?? settingState.setting['player.playQuality']
-          if (info.selectedList.length) info.selectedList.forEach(m => addDownloadTask(m, quality))
-          else addDownloadTask(info.musicInfo, quality)
+          if (info.selectedList.length) {
+            const quality = settingState.setting['download.quality'] ?? settingState.setting['player.playQuality']
+            info.selectedList.forEach(m => addDownloadTask(m, quality))
+          } else musicDownloadModalRef.current?.show(info.musicInfo)
         }}
         onRemoveCache={info => { void clearMusicUrl(info.musicInfo) }}
       />
@@ -178,6 +181,7 @@ export default () => {
         onUpdate={handleUpdateMetadata}
       />
       <MusicToggleModal ref={musicToggleModalRef} />
+      <MusicDownloadModal ref={musicDownloadModalRef} />
     </View>
   )
 }
