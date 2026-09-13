@@ -53,11 +53,15 @@ export default forwardRef<MusicDownloadModalType, MusicDownloadModalProps>(
 
       map.set('128k', global.i18n.t('128k'))
       map.set('320k', global.i18n.t('320k'))
+      map.set('192k', global.i18n.t('192k'))
       map.set('flac', global.i18n.t('flac'))
+      map.set('flac24bit', global.i18n.t('flac24bit'))
       map.set('hires', global.i18n.t('hires'))
       map.set('atmos', global.i18n.t('atmos'))
       map.set('atmos_plus', global.i18n.t('atmos_plus'))
       map.set('master', global.i18n.t('master'))
+      map.set('ape', global.i18n.t('ape'))
+      map.set('wav', global.i18n.t('wav'))
 
       // @ts-ignore
       const qualitys = musicInfo.meta.qualitys
