@@ -526,5 +526,9 @@
   "hires": "Hires Lossless 24-Bit",
   "atmos": "Atmos",
   "atmos_plus": "Atmos 2.0",
-  "master": "Master"
+  "master": "Master",
+  "flac24bit": "FLAC 24-Bit",
+  "192k": "192K",
+  "ape": "APE",
+  "wav": "WAV"
 }

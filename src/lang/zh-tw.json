@@ -526,5 +526,9 @@
   "hires": "Hires 無損24-Bit",
   "atmos": "臻品音質",
   "atmos_plus": "臻品音質 2.0",
-  "master": "臻品母帶"
+  "master": "臻品母帶",
+  "flac24bit": "FLAC 24-Bit",
+  "192k": "192K",
+  "ape": "APE",
+  "wav": "WAV"
 }
