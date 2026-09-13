@@ -7,7 +7,9 @@ import ListMusicMultiAdd, { type MusicMultiAddModalType as ListAddMultiType } fr
 import ListMusicAdd, { type MusicAddModalType as ListMusicAddType } from '@/components/MusicAddModal'
 import MultipleModeBar, { type MultipleModeBarType, type SelectMode } from './MultipleModeBar'
 import { clearMusicUrl, handleDislikeMusic, handlePlay, handlePlayLater, handleShare, handleShowMusicSourceDetail } from './listAction'
-import { downloadMusic, downloadMusicList } from '@/core/download'
+import { addTask as addDownloadTask } from '@/core/download'
+import settingState from '@/store/setting/state'
+import BatchDownloadModal, { type BatchDownloadModalType } from './BatchDownloadModal'
 import { createStyle } from '@/utils/tools'
 
 export interface OnlineListProps {
@@ -38,6 +40,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
   const listMusicAddRef = useRef<ListMusicAddType>(null)
   const listMusicMultiAddRef = useRef<ListAddMultiType>(null)
   const listMenuRef = useRef<ListMenuType>(null)
+  const batchDownloadModalRef = useRef<BatchDownloadModalType>(null)
   // const loadingMaskRef = useRef<LoadingMaskType>(null)
 
   useImperativeHandle(ref, () => ({
@@ -57,6 +60,11 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
   const hancelSwitchSelectMode = (mode: SelectMode) => {
     multipleModeBarRef.current?.setSwitchMode(mode)
     listRef.current?.setSelectMode(mode)
+  }
+  const handleBatchDownload = () => {
+    const selectedList = listRef.current?.getSelectedList() ?? []
+    if (!selectedList.length) return
+    batchDownloadModalRef.current?.show(selectedList)
   }
   const hancelExitSelect = () => {
     multipleModeBarRef.current?.exitSelectMode()
@@ -100,10 +108,12 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
           onSwitchMode={hancelSwitchSelectMode}
           onSelectAll={isAll => listRef.current?.selectAll(isAll)}
           onExitSelectMode={hancelExitSelect}
+          onBatchDownload={handleBatchDownload}
         />
       </View>
       <ListMusicAdd ref={listMusicAddRef} onAdded={() => { hancelExitSelect() }} />
       <ListMusicMultiAdd ref={listMusicMultiAddRef} onAdded={() => { hancelExitSelect() }} />
+      <BatchDownloadModal ref={batchDownloadModalRef} onConfirm={() => { hancelExitSelect() }} />
       <ListMenu
         ref={listMenuRef}
         onPlay={info => { handlePlay(info.musicInfo) }}
@@ -111,7 +121,11 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
         onCopyName={info => { handleShare(info.musicInfo) }}
         onAdd={handleAddMusic}
         onMusicSourceDetail={info => { void handleShowMusicSourceDetail(info.musicInfo) }}
-        onDownload={info => { void (info.selectedList.length ? downloadMusicList(info.selectedList) : downloadMusic(info.musicInfo)) }}
+        onDownload={info => {
+          const quality = settingState.setting['download.quality'] ?? settingState.setting['player.playQuality']
+          if (info.selectedList.length) info.selectedList.forEach(m => addDownloadTask(m, quality))
+          else addDownloadTask(info.musicInfo, quality)
+        }}
         onRemoveCache={info => { void clearMusicUrl(info.musicInfo) }}
         onDislikeMusic={info => { void handleDislikeMusic(info.musicInfo) }}
       />
