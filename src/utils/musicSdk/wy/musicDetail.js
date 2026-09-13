@@ -1,6 +1,103 @@
 import { httpFetch } from '../../request'
 import { weapi } from './utils/crypto'
 import { formatPlayTime, sizeFormate } from '../../index'
+import { allMusicList } from '@/utils/listManage'
+import { updateListMusics } from '@/core/list'
+import playerState from '@/store/player/state'
+
+const fetchingDetails = new Set()
+
+export const fetchAndApplyDetailedQuality = async(musicInfo, retryNum = 0) => {
+  let latestMusicInfo = null
+  for (const list of allMusicList.values()) {
+    const found = list.find(item => item.id === musicInfo.id)
+    if (found) {
+      latestMusicInfo = found
+      break
+    }
+  }
+  const currentMusicInfo = latestMusicInfo || musicInfo
+  if (currentMusicInfo.meta._full) return currentMusicInfo
+
+  const songId = currentMusicInfo.meta.songId
+  if (fetchingDetails.has(songId) && retryNum === 0) return currentMusicInfo
+  if (retryNum === 0) fetchingDetails.add(songId)
+
+  try {
+    const requestObj = httpFetch(`https://music.163.com/api/song/music/detail/get?songId=${songId}`, {
+      method: 'get',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
+        origin: 'https://music.163.com',
+      },
+    })
+    const { body, statusCode } = await requestObj.promise
+
+    if (statusCode !== 200 || !body || body.code !== 200) {
+      throw new Error('Failed to get song quality information from API')
+    }
+
+    const data = body.data
+
+    const newTypes = [...(musicInfo.meta.qualitys || [])]
+    const new_Types = { ...(musicInfo.meta._qualitys || {}) }
+
+    if (data.jm && data.jm.size && !new_Types.master) {
+      const size = sizeFormate(data.jm.size)
+      newTypes.push({ type: 'master', size })
+      new_Types.master = { size }
+    }
+    if (data.db && data.db.size && !new_Types.atmos) {
+      const size = sizeFormate(data.db.size)
+      newTypes.push({ type: 'atmos', size })
+      new_Types.atmos = { size }
+    }
+
+    const updatedMusicInfo = {
+      ...musicInfo,
+      meta: {
+        ...musicInfo.meta,
+        qualitys: newTypes,
+        _qualitys: new_Types,
+        _full: true,
+      },
+    }
+
+    const listIdsToUpdate = [];
+    for (const [listId, list] of allMusicList.entries()) {
+      if (list.some(item => item.id === musicInfo.id)) {
+        listIdsToUpdate.push(listId);
+      }
+    }
+
+    if (listIdsToUpdate.length) {
+      void updateListMusics(listIdsToUpdate.map(id => ({ id, musicInfo: updatedMusicInfo })));
+    } else {
+      global.app_event.musicInfoUpdate(updatedMusicInfo);
+    }
+
+    if (playerState.playMusicInfo.musicInfo?.id === musicInfo.id) {
+      playerState.playMusicInfo.musicInfo.meta = updatedMusicInfo.meta;
+    }
+
+    fetchingDetails.delete(songId)
+    return updatedMusicInfo
+
+  } catch (error) {
+    if (++retryNum > 2) {
+      console.error(`Failed to fetch details for ${musicInfo.name} after max retries:`, error)
+      fetchingDetails.delete(songId)
+      return { ...musicInfo, meta: { ...musicInfo.meta, _full: false } }
+    }
+
+    const delay = 200
+    console.log(`Retrying fetch details for ${musicInfo.name} in ${delay}ms... (Attempt ${retryNum})`)
+    await new Promise(resolve => setTimeout(resolve, delay))
+
+    return fetchAndApplyDetailedQuality(musicInfo, retryNum)
+  }
+}
+
 // https://github.com/Binaryify/NeteaseCloudMusicApi/blob/master/module/song_detail.js
 
 export default {
