@@ -26,7 +26,7 @@ export default memo(() => {
   return (
     <SubTitle title={t('setting_download_quality')}>
       <View style={styles.list}>
-        {qualityList.map(quality => <Item name={quality} id={quality} key={quality} />)}
+        {qualityList.map(quality => <Item name={t(quality)} id={quality} key={quality} />)}
       </View>
     </SubTitle>
   )

@@ -34,7 +34,7 @@ export default memo(() => {
     <SubTitle title={t('setting_play_play_quality')}>
       <View style={styles.list}>
         {
-          playQualityList.map((q) => <Item name={q} id={q} key={q} />)
+          playQualityList.map((q) => <Item name={t(q)} id={q} key={q} />)
         }
       </View>
     </SubTitle>
