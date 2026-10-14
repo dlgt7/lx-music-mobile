@@ -3,7 +3,7 @@ import { FlatList, TouchableOpacity, View } from 'react-native'
 import { useDownloadTasks } from '@/store/download/hook'
 import { removeTask, retryTask, resumeTask, pauseTask } from '@/core/download'
 import commonState from '@/store/common/state'
-import { pushDownloadManagerScreen } from '@/navigation'
+import { navigations } from '@/navigation'
 import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
 import Menu from '@/components/common/Menu'
@@ -91,7 +91,7 @@ export default () => {
           accessibilityLabel="下载管理"
           onPress={() => {
             const homeId = commonState.componentIds?.home
-            if (homeId) pushDownloadManagerScreen(homeId)
+            if (homeId) navigations.pushDownloadManagerScreen(homeId)
           }}
         >
           <Icon name="download-2" color={theme['c-primary-font']} size={18} />
