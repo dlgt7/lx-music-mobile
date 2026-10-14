@@ -130,7 +130,9 @@ public class MediaStoreModule extends ReactContextBaseJavaModule {
     } catch (Exception error) {
       return false;
     } finally {
-      retriever.release();
+      try {
+        retriever.release();
+      } catch (Exception ignored) {}
     }
   }
 }
