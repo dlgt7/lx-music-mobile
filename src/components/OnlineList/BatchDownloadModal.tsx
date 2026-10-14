@@ -7,29 +7,31 @@ import { useSettingValue } from '@/store/setting/hook'
 import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
 import { batchDownload } from '@/core/download'
+import { TRY_QUALITYS_LIST } from '@/core/music/utils'
 
 export interface BatchDownloadModalType {
   show: (list: LX.Music.MusicInfo[]) => void
 }
-
-const qualityIds: LX.Quality[] = [
-  '128k', '320k', 'flac', 'flac24bit',
-]
 
 export default forwardRef<BatchDownloadModalType, { onConfirm?: () => void }>(
   ({ onConfirm }, ref) => {
     const alertRef = useRef<ConfirmAlertType>(null)
     const selectedListRef = useRef<LX.Music.MusicInfo[]>([])
     const showOneDriveDownload = useSettingValue('menu.downloadOneDrive')
+    const defaultDownloadQuality = useSettingValue('download.quality')
     const t = useI18n()
     const [visible, setVisible] = useState(false)
-    const [selectedQuality, setSelectedQuality] = useState<LX.Quality>('128k')
+    const [selectedQuality, setSelectedQuality] = useState<LX.Quality>(defaultDownloadQuality)
     const [selectedTarget, setSelectedTarget] = useState<'local' | 'onedrive'>('local')
+    const qualityIds = useMemo(() => {
+      return [...TRY_QUALITYS_LIST, '128k'].reverse() as LX.Quality[]
+    }, [])
 
     useImperativeHandle(ref, () => ({
       show(list) {
         selectedListRef.current = list
         setSelectedTarget('local')
+        setSelectedQuality(defaultDownloadQuality)
         if (visible) alertRef.current?.setVisible(true)
         else setVisible(true)
       },
