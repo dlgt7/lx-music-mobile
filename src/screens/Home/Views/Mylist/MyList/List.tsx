@@ -5,6 +5,7 @@ import { Icon } from '@/components/common/Icon'
 
 import { useTheme } from '@/store/theme/hook'
 import { useActiveListId, useListFetching, useMyList } from '@/store/list/hook'
+import { useSettingValue } from '@/store/setting/hook'
 import { createStyle } from '@/utils/tools'
 import { LIST_SCROLL_POSITION_KEY } from '@/config/constant'
 import { getListPosition, saveListPosition } from '@/utils/data'
@@ -13,10 +14,27 @@ import Text from '@/components/common/Text'
 import { type Position } from './ListMenu'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import Loading from '@/components/common/Loading'
+import commonState from '@/store/common/state'
+import { pushLocalMusicScreen } from '@/navigation'
 
 type FlatListType = FlatListProps<LX.List.MyListInfo>
 
 const ITEM_HEIGHT = scaleSizeH(40)
+
+const LocalMusicEntry = () => {
+  const theme = useTheme()
+  const handlePress = () => {
+    const componentId = commonState.componentIds.home
+    if (componentId) pushLocalMusicScreen(componentId)
+  }
+  return (
+    <TouchableOpacity style={{ ...styles.localEntry, height: ITEM_HEIGHT, borderBottomColor: theme['c-border-background'] }} onPress={handlePress}>
+      <Icon name="sd-card" size={16} color={theme['c-primary-font']} style={styles.localIcon} />
+      <Text style={styles.localName} color={theme['c-primary-font']}>本地音乐</Text>
+      <Icon name="chevron-right" size={12} color={theme['c-350']} />
+    </TouchableOpacity>
+  )
+}
 
 const ListItem = memo(({ item, index, activeId, onPress, onShowMenu }: {
   onPress: (item: LX.List.MyListInfo) => void
@@ -76,6 +94,7 @@ export default ({ onShowMenu }: {
   const flatListRef = useRef<FlatList>(null)
   const allList = useMyList()
   const activeListId = useActiveListId()
+  const localMusicEnable = useSettingValue('localMusic.enable')
 
   const handleToggleList = (item: LX.List.MyListInfo) => {
     // setVisiblePanel(false)
@@ -128,6 +147,7 @@ export default ({ onShowMenu }: {
       initialNumToRender={18}
       renderItem={renderItem}
       keyExtractor={getkey}
+      ListHeaderComponent={localMusicEnable ? <LocalMusicEntry /> : null}
       // extraData={activeIndex}
       getItemLayout={getItemLayout}
     />
@@ -151,6 +171,20 @@ const styles = createStyle({
     paddingRight: 5,
     paddingLeft: 5,
     // borderBottomWidth: BorderWidths.normal,
+  },
+  localEntry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 8,
+    paddingRight: 8,
+    borderBottomWidth: 1,
+  },
+  localIcon: {
+    marginRight: 8,
+  },
+  localName: {
+    flexGrow: 1,
+    flexShrink: 1,
   },
   listActiveIcon: {
     // width: 18,
