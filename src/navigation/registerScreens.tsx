@@ -8,6 +8,7 @@ import {
   SonglistDetail,
   Comment,
   DownloadManager,
+  LocalMusic,
   // Setting,
 } from '@/screens'
 import { Provider } from '@/store/Provider'
@@ -21,6 +22,7 @@ import {
   PACT_MODAL,
   SYNC_MODE_MODAL,
   DOWNLOAD_MANAGER_SCREEN,
+  LOCAL_MUSIC_SCREEN,
   // SETTING_SCREEN,
 } from './screenNames'
 import VersionModal from './components/VersionModal'
@@ -50,6 +52,7 @@ export default () => {
   Navigation.registerComponent(PACT_MODAL, () => WrappedComponent(PactModal))
   Navigation.registerComponent(SYNC_MODE_MODAL, () => WrappedComponent(SyncModeModal))
   Navigation.registerComponent(DOWNLOAD_MANAGER_SCREEN, () => WrappedComponent(DownloadManager))
+  Navigation.registerComponent(LOCAL_MUSIC_SCREEN, () => WrappedComponent(LocalMusic))
   // Navigation.registerComponent(SETTING_SCREEN, () => WrappedComponent(Setting))
 
   console.info('All screens have been registered...')

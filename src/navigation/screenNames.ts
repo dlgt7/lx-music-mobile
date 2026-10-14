@@ -6,6 +6,7 @@ export const VERSION_MODAL = 'lxm.VersionModal'
 export const PACT_MODAL = 'lxm.PactModal'
 export const SYNC_MODE_MODAL = 'lxm.SyncModeModal'
 export const DOWNLOAD_MANAGER_SCREEN = 'lxm.DownloadManagerScreen'
+export const LOCAL_MUSIC_SCREEN = 'lxm.LocalMusicScreen'
 // export const SETTING_SCREEN = 'lxm.SettingScreen'
 // export const TOAST_SCREEN = 'lxm.ToastScreen'
 

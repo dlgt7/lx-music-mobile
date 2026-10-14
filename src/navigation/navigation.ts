@@ -6,6 +6,8 @@ import {
   PLAY_DETAIL_SCREEN,
   SONGLIST_DETAIL_SCREEN,
   COMMENT_SCREEN,
+  LOCAL_MUSIC_SCREEN,
+  DOWNLOAD_MANAGER_SCREEN,
   // SETTING_SCREEN,
 } from './screenNames'
 
@@ -382,6 +384,67 @@ export function pushCommentScreen(componentId: string) {
             },
           },
         },
+      },
+    })
+  })
+}
+
+const buildSimplePushOptions = () => {
+  const theme = themeState.theme
+  return {
+    topBar: { visible: false, height: 0, drawBehind: false } as const,
+    statusBar: {
+      drawBehind: true,
+      visible: true,
+      style: getStatusBarStyle(theme.isDark),
+      backgroundColor: 'transparent',
+    },
+    navigationBar: {
+      backgroundColor: theme['c-content-background'],
+    },
+    layout: {
+      componentBackgroundColor: theme['c-content-background'],
+    },
+    animations: {
+      push: {
+        content: {
+          translationX: {
+            from: windowSizeTools.getSize().width,
+            to: 0,
+            duration: 300,
+          },
+        },
+      },
+      pop: {
+        content: {
+          translationX: {
+            from: 0,
+            to: windowSizeTools.getSize().width,
+            duration: 300,
+          },
+        },
+      },
+    },
+  }
+}
+
+export function pushLocalMusicScreen(componentId: string) {
+  requestAnimationFrame(() => {
+    void Navigation.push(componentId, {
+      component: {
+        name: LOCAL_MUSIC_SCREEN,
+        options: buildSimplePushOptions(),
+      },
+    })
+  })
+}
+
+export function pushDownloadManagerScreen(componentId: string) {
+  requestAnimationFrame(() => {
+    void Navigation.push(componentId, {
+      component: {
+        name: DOWNLOAD_MANAGER_SCREEN,
+        options: buildSimplePushOptions(),
       },
     })
   })
