@@ -5,6 +5,8 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
@@ -50,8 +52,8 @@ public class ResumableDownloadModule extends ReactContextBaseJavaModule {
   public void removeListeners(Integer count) {}
 
   @ReactMethod
-  public void download(String id, String url, String filePath, Promise promise) {
-    new Thread(() -> downloadFile(id, url, filePath, promise), "LX-resumable-download").start();
+  public void download(String id, String url, String filePath, ReadableMap headers, Promise promise) {
+    new Thread(() -> downloadFile(id, url, filePath, headers, promise), "LX-resumable-download").start();
   }
 
   @ReactMethod
@@ -60,7 +62,7 @@ public class ResumableDownloadModule extends ReactContextBaseJavaModule {
     if (call != null) call.cancel();
   }
 
-  private void downloadFile(String id, String url, String filePath, Promise promise) {
+  private void downloadFile(String id, String url, String filePath, ReadableMap headers, Promise promise) {
     File target = new File(filePath);
     File parent = target.getParentFile();
     if (parent != null && !parent.exists() && !parent.mkdirs()) {
@@ -73,6 +75,17 @@ public class ResumableDownloadModule extends ReactContextBaseJavaModule {
       Request.Builder requestBuilder = new Request.Builder()
         .url(url)
         .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; Pixel 3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Mobile Safari/537.36");
+      if (headers != null) {
+        ReadableMapKeySetIterator iterator = headers.keySetIterator();
+        while (iterator.hasNextKey()) {
+          String key = iterator.nextKey();
+          String value = headers.hasKey(key) && !headers.isNull(key) ? headers.getString(key) : null;
+          if (value != null) {
+            if ("User-Agent".equals(key)) requestBuilder.removeHeader("User-Agent");
+            requestBuilder.header(key, value);
+          }
+        }
+      }
       if (existingBytes > 0) requestBuilder.header("Range", "bytes=" + existingBytes + "-");
 
       Call call = client.newCall(requestBuilder.build());
