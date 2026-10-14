@@ -218,6 +218,16 @@ export class AppEvent extends Event {
   download_metadata_update(payload: { id: string, metadataStatus: DownloadTask['metadataStatus'] }) {
     this.emit('download_metadata_update', payload)
   }
+
+  local_music_list_changed() {
+    this.emit('local_music_list_changed')
+  }
+  local_music_scan_state_changed() {
+    this.emit('local_music_scan_state_changed')
+  }
+  local_music_scan_progress_changed() {
+    this.emit('local_music_scan_progress_changed')
+  }
 }
 
 
