@@ -6,7 +6,8 @@ import localMusicActions from '@/store/localMusic/action'
 import { setMusicList } from '@/utils/listManage'
 import { formatPlayTime2 } from '@/utils'
 import { externalStorageDirectoryPath } from '@/utils/fs'
-import { toast } from '@/utils/tools'
+import { toast, requestStoragePermission } from '@/utils/tools'
+import { PermissionsAndroid, Platform } from 'react-native'
 
 const normalizePath = (path: string) => path.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase()
 
@@ -67,11 +68,35 @@ const readMetadataBatch = async(paths: string[], onProgress?: (current: number, 
   return result
 }
 
+const ensureScanPermissions = async(): Promise<boolean> => {
+  if (Platform.OS !== 'android') return true
+  const baseGranted = await requestStoragePermission()
+  if (baseGranted !== true) {
+    toast(baseGranted === null ? '请在系统设置中授予存储权限后重试' : '本地音乐扫描需要存储权限', 'long')
+    return false
+  }
+  if (Platform.Version >= 33) {
+    try {
+      const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO)
+      if (result !== PermissionsAndroid.RESULTS.GRANTED) {
+        toast('需要音频读取权限才能扫描本地音乐', 'long')
+        return false
+      }
+    } catch {
+      return false
+    }
+  }
+  return true
+}
+
 export const scanLocalMusic = async() => {
   if (localMusicState.isScanning) return
   localMusicActions.setScanning(true)
   localMusicActions.setScanProgress(0, 0)
   try {
+    if (!(await ensureScanPermissions())) {
+      return
+    }
     const mediaStoreItems = await queryAudioMediaStore().catch(() => [] as MediaStoreAudioItem[])
 
     const seenPaths = new Set<string>()
