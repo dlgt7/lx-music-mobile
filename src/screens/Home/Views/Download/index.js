@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { FlatList, TouchableOpacity, View } from 'react-native'
 import { useDownloadTasks } from '@/store/download/hook'
-import { removeTask, retryTask, resumeTask } from '@/core/download'
+import { removeTask, retryTask, resumeTask, pauseTask } from '@/core/download'
+import commonState from '@/store/common/state'
+import { pushDownloadManagerScreen } from '@/navigation'
 import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
 import Menu from '@/components/common/Menu'
@@ -84,6 +86,16 @@ export default () => {
           <Text style={styles.sortLabel} size={13} color={theme['c-primary-font']}>排序</Text>
           <Icon name="chevron-right" color={theme['c-primary-font']} size={10} />
         </TouchableOpacity>
+        <View style={{ flex: 1 }} />
+        <TouchableOpacity
+          accessibilityLabel="下载管理"
+          onPress={() => {
+            const homeId = commonState.componentIds?.home
+            if (homeId) pushDownloadManagerScreen(homeId)
+          }}
+        >
+          <Icon name="download-2" color={theme['c-primary-font']} size={18} />
+        </TouchableOpacity>
       </View>}
       ListEmptyComponent={<Text style={{ padding: 24, textAlign: 'center' }}>暂无下载歌曲</Text>}
       renderItem={({ item, index }) => <View style={{ ...styles.item, borderBottomColor: theme['c-border-background'] }}>
@@ -95,6 +107,9 @@ export default () => {
         <View style={styles.actions}>
           {item.status == 'paused' && <TouchableOpacity style={styles.action} accessibilityLabel="继续下载" onPress={() => { resumeTask(item.id) }}>
             <Icon name="play" color={theme['c-primary-font']} size={18} />
+          </TouchableOpacity>}
+          {item.status == 'downloading' && <TouchableOpacity style={styles.action} accessibilityLabel="暂停下载" onPress={() => { pauseTask(item.id) }}>
+            <Icon name="pause" color={theme['c-primary-font']} size={18} />
           </TouchableOpacity>}
           {item.status == 'error' && <TouchableOpacity style={styles.action} accessibilityLabel="重试下载" onPress={() => { retryTask(item.id) }}>
             <Icon name="available_updates" color={theme['c-primary-font']} size={18} />
