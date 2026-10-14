@@ -15,7 +15,7 @@ import { type Position } from './ListMenu'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import Loading from '@/components/common/Loading'
 import commonState from '@/store/common/state'
-import { pushLocalMusicScreen } from '@/navigation'
+import { navigations } from '@/navigation'
 
 type FlatListType = FlatListProps<LX.List.MyListInfo>
 
@@ -25,7 +25,7 @@ const LocalMusicEntry = () => {
   const theme = useTheme()
   const handlePress = () => {
     const componentId = commonState.componentIds.home
-    if (componentId) pushLocalMusicScreen(componentId)
+    if (componentId) navigations.pushLocalMusicScreen(componentId)
   }
   return (
     <TouchableOpacity style={{ ...styles.localEntry, height: ITEM_HEIGHT, borderBottomColor: theme['c-border-background'] }} onPress={handlePress}>
