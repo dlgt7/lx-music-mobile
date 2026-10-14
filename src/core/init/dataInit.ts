@@ -10,6 +10,7 @@ import { unlink } from '@/utils/fs'
 import { TEMP_FILE_PATH } from '@/utils/tools'
 import { getDownloadTasks } from '@/utils/data/download'
 import downloadActions from '@/store/download/action'
+import { initLocalMusic, scanLocalMusic } from '@/core/localMusic'
 // import { play, playList } from '../player/player'
 
 // const initPrevPlayInfo = async(appSetting: LX.AppSetting) => {
@@ -38,6 +39,13 @@ export default async(appSetting: LX.AppSetting) => {
   const savedTasks = await getDownloadTasks()
   downloadActions.setTasks(savedTasks)
   bootLog('Download tasks inited.')
+
+  bootLog('Local music init...')
+  await initLocalMusic()
+  if (appSetting['localMusic.enable'] && appSetting['localMusic.autoScan']) {
+    void scanLocalMusic()
+  }
+  bootLog('Local music inited.')
 
   setNavActiveId((await getViewPrevState()).id)
   void unlink(TEMP_FILE_PATH)
