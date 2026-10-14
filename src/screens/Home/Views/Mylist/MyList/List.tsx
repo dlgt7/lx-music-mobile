@@ -10,29 +10,47 @@ import { createStyle } from '@/utils/tools'
 import { LIST_SCROLL_POSITION_KEY } from '@/config/constant'
 import { getListPosition, saveListPosition } from '@/utils/data'
 import { setActiveList } from '@/core/list'
+
+import { useLocalMusicScanState } from '@/store/localMusic/hook'
 import Text from '@/components/common/Text'
 import { type Position } from './ListMenu'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import Loading from '@/components/common/Loading'
-import commonState from '@/store/common/state'
-import { navigations } from '@/navigation'
 
 type FlatListType = FlatListProps<LX.List.MyListInfo>
 
 const ITEM_HEIGHT = scaleSizeH(40)
+const LOCAL_MUSIC_LIST_ID = 'local_music'
+const localMusicListInfo: LX.List.MyDefaultListInfo = { id: LOCAL_MUSIC_LIST_ID, name: '本地音乐' }
 
-const LocalMusicEntry = () => {
+const LocalMusicEntry = ({ active, onPress, onShowMenu }: {
+  active: boolean
+  onPress: () => void
+  onShowMenu: (position: Position) => void
+}) => {
   const theme = useTheme()
-  const handlePress = () => {
-    const componentId = commonState.componentIds.home
-    if (componentId) navigations.pushLocalMusicScreen(componentId)
+  const moreButtonRef = useRef<TouchableOpacity>(null)
+  const isScanning = useLocalMusicScanState()
+
+  const handleShowMenu = () => {
+    if (moreButtonRef.current?.measure) {
+      moreButtonRef.current.measure((fx, fy, width, height, px, py) => {
+        onShowMenu({ x: Math.ceil(px), y: Math.ceil(py), w: Math.ceil(width), h: Math.ceil(height) })
+      })
+    }
   }
+
   return (
-    <TouchableOpacity style={{ ...styles.localEntry, height: ITEM_HEIGHT, borderBottomColor: theme['c-border-background'] }} onPress={handlePress}>
-      <Icon name="sd-card" size={16} color={theme['c-primary-font']} style={styles.localIcon} />
-      <Text style={styles.localName} color={theme['c-primary-font']}>本地音乐</Text>
-      <Icon name="chevron-right" size={12} color={theme['c-350']} />
-    </TouchableOpacity>
+    <View style={{ ...styles.listItem, height: ITEM_HEIGHT }}>
+      <Icon style={styles.localIcon} name="sd-card" size={14} color={active ? theme['c-primary-font'] : theme['c-font']} />
+      {isScanning ? <Loading color={active ? theme['c-primary-font'] : theme['c-font']} style={styles.loading} /> : null}
+      <TouchableOpacity style={styles.listName} onPress={onPress}>
+        <Text numberOfLines={1} color={active ? theme['c-primary-font'] : theme['c-font']}>本地音乐</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.listMoreBtn}>
+        <Icon name="dots-vertical" color={theme['c-350']} size={12} />
+      </TouchableOpacity>
+    </View>
   )
 }
 
@@ -105,6 +123,17 @@ export default ({ onShowMenu }: {
   }
 
 
+  const handleToggleLocalMusic = () => {
+    global.app_event.changeLoveListVisible(false)
+    requestAnimationFrame(() => {
+      setActiveList(LOCAL_MUSIC_LIST_ID)
+    })
+  }
+
+  const showLocalMusicMenu = (position: Position) => {
+    onShowMenu({ listInfo: localMusicListInfo, index: 0 }, position)
+  }
+
   const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
     void saveListPosition(LIST_SCROLL_POSITION_KEY, nativeEvent.contentOffset.y)
   }
@@ -147,7 +176,13 @@ export default ({ onShowMenu }: {
       initialNumToRender={18}
       renderItem={renderItem}
       keyExtractor={getkey}
-      ListHeaderComponent={localMusicEnable ? <LocalMusicEntry /> : null}
+      ListHeaderComponent={localMusicEnable ? (
+        <LocalMusicEntry
+          active={activeListId == LOCAL_MUSIC_LIST_ID}
+          onPress={handleToggleLocalMusic}
+          onShowMenu={showLocalMusicMenu}
+        />
+      ) : null}
       // extraData={activeIndex}
       getItemLayout={getItemLayout}
     />
@@ -172,19 +207,9 @@ const styles = createStyle({
     paddingLeft: 5,
     // borderBottomWidth: BorderWidths.normal,
   },
-  localEntry: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: 8,
-    paddingRight: 8,
-    borderBottomWidth: 1,
-  },
   localIcon: {
-    marginRight: 8,
-  },
-  localName: {
-    flexGrow: 1,
-    flexShrink: 1,
+    marginLeft: 3,
+    marginRight: 5,
   },
   listActiveIcon: {
     // width: 18,
