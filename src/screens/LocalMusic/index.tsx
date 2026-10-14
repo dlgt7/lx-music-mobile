@@ -1,6 +1,8 @@
 import { memo, useCallback, useEffect, useRef } from 'react'
 import { View, TouchableOpacity, FlatList, type FlatListProps } from 'react-native'
 import PageContent from '@/components/PageContent'
+import StatusBar from '@/components/common/StatusBar'
+import PlayerBar from '@/components/player/PlayerBar'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
 import { useTheme } from '@/store/theme/hook'
@@ -9,7 +11,8 @@ import { createStyle } from '@/utils/tools'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { useStatusbarHeight } from '@/store/common/hook'
 import { pop } from '@/navigation'
-import { HEADER_HEIGHT as _HEADER_HEIGHT } from '@/config/constant'
+import { setComponentId } from '@/core/common'
+import { HEADER_HEIGHT as _HEADER_HEIGHT, COMPONENT_IDS } from '@/config/constant'
 import { useLocalMusics, useLocalMusicScanState, useLocalMusicScanProgress } from '@/store/localMusic/hook'
 import { scanLocalMusic } from '@/core/localMusic'
 import { listMusicOverwrite } from '@/utils/listManage'
@@ -70,6 +73,7 @@ export default memo(({ componentId }: { componentId: string }) => {
   const activeId = activeIdRef.current
 
   useEffect(() => {
+    setComponentId(COMPONENT_IDS.localMusic, componentId)
     if (musics.length === 0 && !isScanning) {
       void scanLocalMusic()
     }
@@ -96,6 +100,7 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   return (
     <PageContent>
+      <StatusBar />
       <View style={styles.container}>
         <Header componentId={componentId} onScan={handleScan} isScanning={isScanning} />
         {progressText ? (
@@ -111,6 +116,7 @@ export default memo(({ componentId }: { componentId: string }) => {
           removeClippedSubviews={true}
         />
       </View>
+      <PlayerBar />
     </PageContent>
   )
 })
