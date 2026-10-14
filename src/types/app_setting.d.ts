@@ -402,6 +402,16 @@ declare global {
       'menu.downloadOneDrive': boolean
 
       /**
+       * 是否启用本地音乐功能（显示入口并允许扫描）
+       */
+      'localMusic.enable': boolean
+
+      /**
+       * 启动时是否自动扫描本地音乐
+       */
+      'localMusic.autoScan': boolean
+
+      /**
        * 是否启用同步
        */
       'sync.enable': boolean
