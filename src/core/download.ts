@@ -15,6 +15,9 @@ import { getValidOneDriveAuth } from '@/core/oneDrive/auth'
 import { getDownloadTasks } from '@/utils/data/download'
 import DownloadTask = LX.Download.DownloadTask
 import wySdk from '@/utils/musicSdk/wy'
+import { startResumableDownload } from '@/utils/nativeModules/resumableDownload'
+
+class PauseDownloadError extends Error {}
 
 const taskQueue: DownloadTask[] = [];
 let isProcessing = false;
@@ -90,9 +93,13 @@ const processQueue = async () => {
   try {
     await startDownload(task);
   } catch (error: any) {
-    downloadActions.updateTask(task.id, { status: 'error', errorMsg: error.message });
-    if (getTaskTarget(task) === 'onedrive') {
-      toast(`OneDrive 下载失败：${error.message}`, 'long');
+    if (error instanceof PauseDownloadError) {
+      downloadActions.updateTask(task.id, { status: 'paused', progress: { ...task.progress, speed: '' } });
+    } else {
+      downloadActions.updateTask(task.id, { status: 'error', errorMsg: error.message });
+      if (getTaskTarget(task) === 'onedrive') {
+        toast(`OneDrive 下载失败：${error.message}`, 'long');
+      }
     }
   } finally {
     isProcessing = false;
@@ -125,43 +132,69 @@ const startDownload = async (task: DownloadTask) => {
     url = await getMusicUrl({ musicInfo: task.musicInfo, quality: task.quality, isRefresh: true });
   }
 
-  if (target === 'local') await requestStoragePermission()
+  if (target === 'local') {
+    const granted = await requestStoragePermission()
+    if (granted !== true) throw new Error('存储权限未授予，无法保存下载文件')
+  }
 
   if (!task.isForceCookie) {
     toast(`${task.fileName} 正在下载...`, 'short');
   }
   let lastWritten = 0;
   let lastTime = Date.now();
-  try {
-    const downloadTask = RNFetchBlob.config({
-      path: task.filePath,
-      fileCache: true,
-    }).fetch('GET', url, getDownloadHeaders(task));
+  const handleProgress = (written: number, total: number) => {
+    const now = Date.now();
+    const deltaTime = now - lastTime;
+    if (deltaTime === 0) return;
 
-    currentDownloadTask = downloadTask;
-    downloadTask.progress({ interval: 500 }, (written, total) => {
-      const now = Date.now();
-      const deltaTime = now - lastTime;
-      if (deltaTime === 0) return;
+    const deltaBytes = written - lastWritten;
+    const speed = deltaBytes / (deltaTime / 1000);
 
-      const deltaBytes = written - lastWritten;
-      const speed = deltaBytes / (deltaTime / 1000);
-
-      lastWritten = written;
-      lastTime = now;
-      const percent = total > 0 ? written / total : 0;
-      downloadActions.updateTask(task.id, {
-        progress: {
-          ...task.progress,
-          percent,
-          downloaded: written,
-          total,
-          speed: `${sizeFormate(speed)}/s`,
-        },
-      });
+    lastWritten = written;
+    lastTime = now;
+    downloadActions.updateTask(task.id, {
+      progress: {
+        ...task.progress,
+        percent: total > 0 ? written / total : 0,
+        downloaded: written,
+        total,
+        speed: `${sizeFormate(speed)}/s`,
+      },
     });
+  };
+  try {
+    if (target === 'local') {
+      const nativeDownload = startResumableDownload(task.id, url, task.filePath, getDownloadHeaders(task), ({ downloaded, total }) => {
+        handleProgress(downloaded, total);
+      });
+      currentDownloadTask = nativeDownload;
+      try {
+        await nativeDownload.promise;
+      } catch (error: any) {
+        if (error?.code === 'CANCELED') throw new PauseDownloadError('paused');
+        throw error;
+      } finally {
+        nativeDownload.dispose();
+      }
+    } else {
+      const downloadTask = RNFetchBlob.config({
+        path: task.filePath,
+        fileCache: true,
+      }).fetch('GET', url, getDownloadHeaders(task));
 
-    await downloadTask;
+      currentDownloadTask = downloadTask;
+      downloadTask.progress({ interval: 500 }, (written, total) => {
+        handleProgress(written, total);
+      });
+
+      try {
+        await downloadTask;
+      } catch (error: any) {
+        if (error?.code === 'CANCELED') throw new PauseDownloadError('paused');
+        throw error;
+      }
+    }
+
     console.log('下载完成:', task.fileName);
     await handleMetadata(task, task.filePath);
     if (target === 'onedrive') {
@@ -176,16 +209,7 @@ const startDownload = async (task: DownloadTask) => {
           fileName: uploadFileName,
           folder: downloadFolder,
           onProgress(uploaded, total) {
-            const percent = total > 0 ? uploaded / total : 0;
-            downloadActions.updateTask(task.id, {
-              progress: {
-                ...task.progress,
-                percent,
-                downloaded: uploaded,
-                total,
-                speed: 'OneDrive',
-              },
-            });
+            handleProgress(uploaded, total);
           },
         });
 
@@ -399,7 +423,15 @@ export const retryTask = (taskId: string) => {
   }
 };
 
-export const resumeTask = async (taskId: string) => {
+export const pauseTask = (taskId: string) => {
+  const task = downloadState.tasks.find(t => t.id === taskId);
+  if (!task || task.status !== 'downloading') return;
+  const current = currentDownloadTask;
+  if (!current) return;
+  current.cancel(() => {});
+};
+
+export const resumeTask = (taskId: string) => {
   const task = downloadState.tasks.find(t => t.id === taskId);
   if (!task) return;
   if (task.status !== 'paused') return;
@@ -408,16 +440,9 @@ export const resumeTask = async (taskId: string) => {
     return;
   }
 
-  try {
-    await unlink(task.filePath);
-  } catch (error) {
-    // Ignore cleanup failures so we can still restart the download.
-  }
-
   downloadActions.updateTask(task.id, {
     status: 'waiting',
     errorMsg: '',
-    progress: { percent: 0, speed: '', downloaded: 0, total: 0 },
     metadataStatus: { cover: 'pending', lyric: 'pending', tags: 'pending' },
   });
   taskQueue.push(task);
