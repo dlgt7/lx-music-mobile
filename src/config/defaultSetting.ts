@@ -81,6 +81,9 @@ const defaultSetting: LX.AppSetting = {
 
   'menu.downloadOneDrive': true,
 
+  'localMusic.enable': true,
+  'localMusic.autoScan': false,
+
   'sync.enable': false,
 
   // 'theme.id': 'blue_plus',
