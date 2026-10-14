@@ -7,6 +7,7 @@ import CheckBox from '@/components/common/CheckBox'
 import { addTask as addDownloadTask } from '@/core/download'
 import { useI18n } from '@/lang'
 import { useSettingValue } from '@/store/setting/hook'
+import { TRY_QUALITYS_LIST } from '@/core/music/utils'
 
 interface TitleType {
   updateTitle: (musicInfo: LX.Music.MusicInfo) => void
@@ -33,7 +34,6 @@ export interface MusicDownloadModalType {
 }
 
 
-const DOWNLOAD_QUALITY_LIST: LX.Quality[] = ['128k', '320k', 'flac']
 
 const QualityItem = ({ id, name, isActive, onSelect }: {
   id: LX.Quality
@@ -58,17 +58,18 @@ export default forwardRef<MusicDownloadModalType, MusicDownloadModalProps>(
     const alertRef = useRef<ConfirmAlertType>(null)
     const titleRef = useRef<TitleType>(null)
     const selectedInfo = useRef<LX.Music.MusicInfo>({} as LX.Music.MusicInfo)
-    const [selectedQuality, setSelectedQuality] = useState<LX.Quality>('128k')
+    const showOneDriveDownload = useSettingValue('menu.downloadOneDrive')
+    const defaultDownloadQuality = useSettingValue('download.quality')
+    const [selectedQuality, setSelectedQuality] = useState<LX.Quality>(defaultDownloadQuality)
     const [selectedTarget, setSelectedTarget] = useState<'local' | 'onedrive'>('local')
     const [visible, setVisible] = useState(false)
-    const showOneDriveDownload = useSettingValue('menu.downloadOneDrive')
 
     useEffect(() => {
       if (visible) {
-        setSelectedQuality('128k')
+        setSelectedQuality(defaultDownloadQuality)
         setSelectedTarget('local')
       }
-    }, [visible])
+    }, [visible, defaultDownloadQuality])
 
     useImperativeHandle(ref, () => ({
       show(info) {
@@ -102,7 +103,7 @@ export default forwardRef<MusicDownloadModalType, MusicDownloadModalProps>(
     }
 
     const qualityItems = useMemo(() => {
-      return DOWNLOAD_QUALITY_LIST.map(quality => (
+      return ([...TRY_QUALITYS_LIST, '128k'].reverse() as LX.Quality[]).map(quality => (
         <QualityItem
           key={quality}
           id={quality}
