@@ -3,6 +3,7 @@ import { readMetadata, type MusicMetadataFull } from '@/utils/localMediaMetadata
 import { getLocalMusics } from '@/utils/data/localMusic'
 import localMusicState from '@/store/localMusic/state'
 import localMusicActions from '@/store/localMusic/action'
+import { setMusicList } from '@/utils/listManage'
 import { formatPlayTime2 } from '@/utils'
 import { externalStorageDirectoryPath } from '@/utils/fs'
 import { toast } from '@/utils/tools'
@@ -116,6 +117,8 @@ export const scanLocalMusic = async() => {
 
     localMusicActions.setScanProgress(total, total)
     localMusicActions.setMusics(musics)
+    setMusicList('local_music', musics)
+    global.app_event.myListMusicUpdate(['local_music'])
     toast(`本地音乐扫描完成，共 ${musics.length} 首`, 'long')
   } catch (error: any) {
     toast(`本地音乐扫描失败：${error.message ?? error}`, 'long')
@@ -127,6 +130,7 @@ export const scanLocalMusic = async() => {
 export const initLocalMusic = async() => {
   const musics = await getLocalMusics()
   localMusicActions.setMusicsSilent(musics)
+  setMusicList('local_music', musics)
 }
 
 export const getLocalMusicList = () => localMusicState.musics
