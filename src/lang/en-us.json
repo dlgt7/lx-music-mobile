@@ -310,6 +310,8 @@
   "setting_list_add_music_location_type_top": "Top",
   "setting_list_click_action": "Automatically switch to current list when clicking a song in the list (Only valid for \"Playlists\" and \"Charts\" page)",
   "setting_list_show interval": "Show song length",
+  "setting_local_music_enable": "Enable local music (scan and play local audio files)",
+  "setting_local_music_auto_scan": "Automatically scan local music on startup",
   "setting_list_show_album_name": "Show song album name",
   "setting_lyric_desktop": "Desktop Lyric",
   "setting_lyric_desktop_enable": "Show lyric window",

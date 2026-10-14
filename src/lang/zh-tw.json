@@ -310,6 +310,8 @@
   "setting_list_add_music_location_type_top": "頂部",
   "setting_list_click_action": "點擊清單裡的歌曲時自動切換到目前清單播放（僅對歌單、排行榜有效）",
   "setting_list_show interval": "顯示歌曲時長",
+  "setting_local_music_enable": "啟用本地音樂（掃描、播放本地音訊檔案）",
+  "setting_local_music_auto_scan": "啟動時自動掃描本地音樂",
   "setting_list_show_album_name": "顯示歌曲專輯",
   "setting_lyric_desktop": "桌面歌詞",
   "setting_lyric_desktop_enable": "顯示歌詞視窗",
