@@ -35,6 +35,8 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
         return global.i18n.t('list_name_default')
       case LIST_IDS.LOVE:
         return global.i18n.t('list_name_love')
+      case 'local_music':
+        return '本地音乐'
       default:
         return listState.allList.find(l => l.id === currentListId)?.name ?? ''
     }
